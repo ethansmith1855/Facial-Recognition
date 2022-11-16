@@ -1,14 +1,17 @@
 const imageUpload = document.getElementById('imageUpload')
 const video = document.getElementById('video');
 
+var listOfEmotions = [];
+
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
   faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
   faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
   faceapi.nets.faceExpressionNet.loadFromUri('/models'),
   faceapi.nets.ssdMobilenetv1.loadFromUri('/modelsRec')
-]).then(start)
+]).then(startVideo)
 
+/*
 async function start(){
   const container = document.createElement('div')
   container.style.position = 'relative'
@@ -32,7 +35,7 @@ async function start(){
     })
   })
 }
-
+*/
 
 
 function startVideo() {
@@ -48,14 +51,32 @@ video.addEventListener('play', () => {
   document.body.append(canvas)
   const displaySize = { width: video.width, height: video.height }
   faceapi.matchDimensions(canvas, displaySize)
+
+  let labeledFaceDescriptors
+  (async () => {
+    labeledFaceDescriptors = await loadLabeledImages()
+  })()
+  
   setInterval(async () => {
     const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
     const resizedDetections = faceapi.resizeResults(detections, displaySize)
     canvas.getContext('2d').clearRect(0,0, canvas.width, canvas.height)
+
+    if (labeledFaceDescriptors) {
+      const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6)
+      const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor))
+      results.forEach((result, i) => {
+        const box = resizedDetections[i].detection.box
+        const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() })
+        drawBox.draw(canvas)
+      })
+    }
+    /*
     faceapi.draw.drawDetections(canvas, resizedDetections)
     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
     faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
-  }, 100)
+    listOfEmotions.push(detections)*/
+  }, 200)
 })
 
 function loadLabeledImages() {
@@ -65,7 +86,7 @@ function loadLabeledImages() {
     labels.map(async label => {
       const descriptions = []
       for (let i = 1; i <= 2; i++) {
-        const img = await faceapi.fetchImage(`https://replit.com/@ethansmith1855/Facial-Recognition#labeled_images/${label}/${i}.jpeg`)
+        const img = await faceapi.fetchImage(`https://replit.com/@ethansmith1855/Facial-Recognition/labeled_images/${label}/${i}.jpeg`)
         const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
         descriptions.push(detections.descriptor)
       }
