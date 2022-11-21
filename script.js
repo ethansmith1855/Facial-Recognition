@@ -1,4 +1,4 @@
-const imageUpload = document.getElementById('imageUpload')
+const imageUpload = document.getElementById('imageUpload');
 const video = document.getElementById('video');
 
 var listOfEmotions = [];
@@ -10,6 +10,7 @@ Promise.all([
   faceapi.nets.faceExpressionNet.loadFromUri('/models'),
   faceapi.nets.ssdMobilenetv1.loadFromUri('/modelsRec')
 ]).then(startVideo)
+
 
 /*
 async function start(){
@@ -71,11 +72,11 @@ video.addEventListener('play', () => {
         drawBox.draw(canvas)
       })
     }
-    /*
+    
     faceapi.draw.drawDetections(canvas, resizedDetections)
     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
     faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
-    listOfEmotions.push(detections)*/
+    /*listOfEmotions.push(detections)*/
   }, 200)
 })
 
@@ -86,7 +87,7 @@ function loadLabeledImages() {
     labels.map(async label => {
       const descriptions = []
       for (let i = 1; i <= 2; i++) {
-        const img = await faceapi.fetchImage(`https://replit.com/@ethansmith1855/Facial-Recognition/labeled_images/${label}/${i}.jpeg`)
+        const img = await faceapi.fetchImage(`https://github.com/ethansmith1855/Facial-Recognition/tree/master/labeled_images/${label}${i}.jpeg`)
         const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
         descriptions.push(detections.descriptor)
       }
